@@ -7,8 +7,9 @@
 	
 	let tasks = null; 
 	let mode = "all";
+	let editing = null;
 	
-	$: console.log(mode);
+	$: console.log(editing);
 	
 	$: filteredTasks = tasks?.filter((task) => {
 		if (mode === "all") 
@@ -54,9 +55,20 @@
 	</div>
 	<ul class="tasks">
 		{#each filteredTasks as task (task)}
-		<li transition:slide>
+		<li transition:slide
+				on:dblclick={() => editing = task}>
 			<Checkbox on:click={() => toggle(task)} value={task.completed} />
+			{#if editing !== task}
 			<span>{task.text.toLowerCase()}</span>
+			{:else}
+				<form on:submit|preventDefault={() => editing=null}>
+<!-- 					svelte-ignore a11y-autofocus -->
+					<input autofocus value={task.text} on:change={() => {
+					task.text = event.target.value;
+					tasks = tasks;
+				}}>
+				</form>
+				{/if}
 			<Delete on:click={() => remove(task)}/>
 		</li>
 		{/each}
@@ -80,7 +92,6 @@
 		color: purple;
 		font-size: 2rem;
 		font-weight: 300;
-		margin-bottom: 1rem;
 	}
 	
 	.tasks {
