@@ -4,7 +4,20 @@
 	import Checkbox from "./Checkbox.svelte";
 	import Delete from "./Delete.svelte";
 	import NewTask from "./NewTask.svelte";
+	
 	let tasks = null; 
+	let mode = "all";
+	
+	$: console.log(mode);
+	
+	$: filteredTasks = tasks?.filter((task) => {
+		if (mode === "all") 
+			return true;
+		if (mode === "active")
+			return !task.completed;
+		if (mode == "completed")
+			return task.completed;
+	});
 	
 	fetch("https://api.mocki.io/v1/7ea36673")
 		.then((resp) => resp.json())
@@ -34,8 +47,13 @@
 		Your tasks are loading...
 	</p>
 	{:else}
+	<div class="controls">
+		<button class:selected={mode === "all"} on:click={() => mode = "all"}>All</button>
+		<button class:selected={mode === "active"} on:click={() => mode = "active"}>Active</button>
+		<button class:selected={mode === "completed"} on:click={() => mode = "completed"}>Completed</button>
+	</div>
 	<ul class="tasks">
-		{#each tasks as task (task)}
+		{#each filteredTasks as task (task)}
 		<li transition:slide>
 			<Checkbox on:click={() => toggle(task)} value={task.completed} />
 			<span>{task.text.toLowerCase()}</span>
@@ -62,6 +80,7 @@
 		color: purple;
 		font-size: 2rem;
 		font-weight: 300;
+		margin-bottom: 1rem;
 	}
 	
 	.tasks {
@@ -85,4 +104,13 @@
 	.tasks > li:not(:first-child) {
 		border-top: 1px solid lightgrey;
 	}
-</style>
+	
+/* 	.controls {
+		margin-bottom: 0.5rem;
+	} */
+	
+	.controls > button.selected {
+		font-weight: bold;
+	}
+	
+	</style>
